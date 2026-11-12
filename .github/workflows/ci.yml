@@ -34,7 +34,7 @@ jobs:
       - name: Ruff
         run: pipx run ruff==0.17.4 check --output-format=github .
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
