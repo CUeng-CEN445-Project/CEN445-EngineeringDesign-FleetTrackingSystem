@@ -1,0 +1,26 @@
+/* ==========================================================================
+   Panel: the shared card surface of the right column
+   (vehicle detail panel, alarm center)
+   ========================================================================== */
+
+.panel {
+  background: linear-gradient(160deg, rgba(15, 28, 45, 0.92), rgba(9, 17, 29, 0.92));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* Empty state, used inside panels and lists ("no alarms", "no vehicle found") */
+.empty-state {
+  margin: auto;
+  text-align: center;
+  padding: 22px 12px;
+  color: var(--muted-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.empty-state svg { width: 26px; height: 26px; opacity: 0.35; margin-bottom: 3px; }
+.empty-state b { font-size: 11px; color: var(--muted); }
+.empty-state span { font-size: 9.5px; line-height: 1.4; max-width: 210px; }

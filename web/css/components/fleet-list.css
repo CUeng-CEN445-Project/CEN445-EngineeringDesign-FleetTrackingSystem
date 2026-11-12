@@ -1,0 +1,188 @@
+/* ==========================================================================
+   Fleet list (sidebar): section header, search, vehicle cards, storage bar
+   ========================================================================== */
+
+/* Section header ---------------------------------------------------------- */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 2px 2px 0;
+}
+.section-head h2 { margin: 0; font-size: 15px; letter-spacing: 0.2px; }
+.section-head p { margin: 2px 0 0; font-size: 10.5px; color: var(--muted-2); }
+
+.live-pill {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+.live-pill i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.8s infinite;
+}
+
+/* Search ------------------------------------------------------------------ */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 0 11px;
+  height: 36px;
+}
+.search-box:focus-within { border-color: var(--border-strong); }
+.search-box svg { width: 14px; height: 14px; color: var(--muted-2); }
+.search-box input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 11.5px;
+  width: 100%;
+}
+.search-box input::placeholder { color: var(--muted-2); }
+
+/* Vehicle list ------------------------------------------------------------ */
+.vehicle-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 3px;
+}
+
+/* Vehicle card
+   --vc  status color (left accent bar, speed bar)
+   --rc  route color (dot before the route name)                            */
+.vehicle-card {
+  position: relative;
+  flex-shrink: 0; /* keep full height; the list scrolls instead of squeezing cards */
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(145deg, rgba(17, 30, 48, 0.85), rgba(10, 19, 32, 0.85));
+  cursor: pointer;
+  transition: 0.16s ease;
+  overflow: hidden;
+}
+.vehicle-card:hover { border-color: #2b405c; transform: translateY(-1px); }
+.vehicle-card.active {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(10, 22, 36, 0.92));
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.12), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.vehicle-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--vc, var(--muted-2));
+  opacity: 0.85;
+}
+
+.vc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.vc-plate { font-size: 13px; font-weight: 700; letter-spacing: 0.4px; }
+
+.vc-status {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: var(--green);
+  background: var(--green-soft);
+}
+.vc-status.speed { color: var(--amber); background: var(--amber-soft); }
+.vc-status.deviation { color: var(--red); background: var(--red-soft); }
+.vc-status.stopped { color: var(--muted); background: var(--muted-soft); }
+
+.vc-mid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+.vc-driver {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 165px;
+}
+.vc-speed { font-size: 15px; font-weight: 700; line-height: 1; }
+.vc-speed small { font-size: 8.5px; font-weight: 500; color: var(--muted-2); margin-left: 2px; }
+
+.vc-route {
+  margin-top: 6px;
+  font-size: 9.5px;
+  color: var(--muted-2);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vc-route i { width: 5px; height: 5px; border-radius: 50%; background: var(--rc, var(--accent)); }
+
+.vc-bar {
+  height: 3px;
+  background: var(--track);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.vc-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--vc, var(--accent));
+  transition: width 0.5s ease;
+}
+
+/* Storage bar ------------------------------------------------------------- */
+.storage-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9.5px;
+  color: var(--muted-2);
+  background: rgba(12, 22, 38, 0.7);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+}
+.storage-bar svg { width: 13px; height: 13px; color: var(--accent); }
+
+/* Responsive -------------------------------------------------------------- */
+@media (max-width: 1500px) {
+  .vc-driver { max-width: 140px; }
+}
+
+@media (max-width: 900px) {
+  .vehicle-list { max-height: 300px; }
+  .storage-bar { display: none; }
+}

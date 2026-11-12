@@ -1,0 +1,113 @@
+/* ==========================================================================
+   Top bar: brand, connection status, clock, global actions
+   ========================================================================== */
+
+.topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(8, 15, 26, 0.78);
+  backdrop-filter: blur(14px);
+  position: relative;
+  z-index: 20;
+}
+
+/* Brand ------------------------------------------------------------------ */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 300px;
+}
+
+.brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: #06121c;
+  background: var(--accent-gradient);
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.35);
+}
+.brand-logo svg { width: 24px; height: 24px; }
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.brand-text strong { font-size: 17px; letter-spacing: 0.2px; }
+.brand-text span { font-size: 10.5px; color: var(--muted); letter-spacing: 0.35px; }
+
+.sim-chip {
+  margin-left: 6px;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.08);
+  padding: 4px 7px;
+  border-radius: 6px;
+}
+
+/* Connection + clock ----------------------------------------------------- */
+.topbar-center {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.conn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--green);
+  text-transform: uppercase;
+}
+.conn i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+  animation: pulse 2s infinite;
+}
+.conn.offline { color: var(--red); }
+.conn.offline i { background: var(--red); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
+
+.clock { text-align: right; line-height: 1.2; }
+.clock b { font-size: 17px; letter-spacing: 0.5px; }
+.clock span { display: block; font-size: 9.5px; color: var(--muted-2); letter-spacing: 0.4px; }
+
+/* Actions ---------------------------------------------------------------- */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive ------------------------------------------------------------- */
+@media (max-width: 1260px) {
+  .topbar-center { gap: 10px; }
+  .brand { min-width: 230px; }
+}
+
+@media (max-width: 900px) {
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
+  .brand { min-width: 0; flex: 1 1 auto; }
+  .topbar-center { order: 3; margin-left: 0; width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 620px) {
+  .brand-text span,
+  .sim-chip { display: none; }
+}

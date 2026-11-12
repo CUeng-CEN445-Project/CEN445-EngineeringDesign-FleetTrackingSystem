@@ -1,0 +1,35 @@
+[project]
+name = "filotrack"
+version = "1.0.0"
+description = "Live fleet monitoring dashboard with time-series storage and speeding / off-route alarms"
+readme = "README.md"
+requires-python = ">=3.10"
+# Runtime uses the Python standard library only.
+dependencies = []
+authors = [
+    { name = "Abdullah Karabudak" },
+    { name = "Fatih Aksoy" },
+    { name = "Yusuf Can" },
+]
+
+# ---------------------------------------------------------------------------
+# Linting (CI runs `ruff check .`). Rules are pinned here so that a newer Ruff
+# release does not silently change what CI enforces.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = ["web/vendor"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes: undefined names, unused imports / variables
+    "B",   # flake8-bugbear: likely bugs
+    "I",   # isort: import order
+    "UP",  # pyupgrade: modern syntax for the target Python version
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["backend", "tests"]

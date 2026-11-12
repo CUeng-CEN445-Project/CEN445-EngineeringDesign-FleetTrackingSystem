@@ -1,0 +1,59 @@
+/* ==========================================================================
+   Application shell
+   Three-column grid below the top bar:  sidebar | map | right panel
+   ========================================================================== */
+
+.layout {
+  height: calc(100vh - var(--topbar-height));
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr) 372px;
+  gap: var(--gap);
+  padding: var(--gap);
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.sidebar,
+.rightbar {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* xl: narrower side columns */
+@media (max-width: 1500px) {
+  .layout { grid-template-columns: 300px minmax(0, 1fr) 350px; }
+}
+
+/* lg: right panel floats over the map */
+@media (max-width: 1260px) {
+  .layout { grid-template-columns: 280px minmax(0, 1fr); }
+
+  .rightbar {
+    position: fixed;
+    right: var(--gap);
+    top: calc(var(--topbar-height) + var(--gap));
+    bottom: var(--gap);
+    width: 350px;
+    z-index: 900;
+  }
+}
+
+/* md: everything stacks into one scrollable column */
+@media (max-width: 900px) {
+  .layout {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .sidebar { order: 1; }
+
+  .rightbar {
+    position: static;
+    width: auto;
+    order: 3;
+  }
+}

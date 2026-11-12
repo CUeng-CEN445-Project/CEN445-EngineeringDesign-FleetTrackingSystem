@@ -1,0 +1,49 @@
+/* ==========================================================================
+   Leaflet dark theme
+   Overrides for third-party Leaflet classes. `!important` is needed because
+   Leaflet's own stylesheet uses equally specific selectors and loads first.
+   ========================================================================== */
+
+.leaflet-container { background: var(--map-bg); font-family: inherit; }
+
+/* Darken the base map so routes and markers stand out */
+.leaflet-tile-pane { filter: brightness(0.52) contrast(1.22) saturate(0.75); }
+
+/* Zoom control */
+.leaflet-control-zoom {
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 9px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: rgba(12, 24, 40, 0.92) !important;
+  color: var(--muted) !important;
+  border-bottom-color: var(--border-soft) !important;
+  width: 29px !important;
+  height: 29px !important;
+  line-height: 29px !important;
+  font-size: 16px !important;
+}
+.leaflet-control-zoom a:hover { background: #16283f !important; color: #fff !important; }
+
+/* Attribution */
+.leaflet-control-attribution {
+  background: rgba(6, 12, 20, 0.7) !important;
+  color: #4d6480 !important;
+  font-size: 8.5px !important;
+}
+.leaflet-control-attribution a { color: #6b87a6 !important; }
+.leaflet-bottom.leaflet-right { bottom: 10px; right: 10px; }
+
+/* Tooltips */
+.leaflet-tooltip {
+  background: rgba(8, 16, 28, 0.95) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  font-size: 10.5px !important;
+  padding: 7px 9px !important;
+}
+.leaflet-tooltip-top:before { border-top-color: var(--border) !important; }
+.leaflet-tooltip .is-alert { color: var(--red-text); }

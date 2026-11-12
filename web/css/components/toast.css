@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Toast notifications (bottom-right of the map)
+   Variants: default (amber, warning / info), .critical (red)
+   ========================================================================== */
+
+.toasts {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 600; /* above map overlays */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 340px;
+  pointer-events: none; /* clicks pass through the empty stack area */
+}
+
+.toast {
+  pointer-events: auto;
+  background: rgba(10, 20, 34, 0.95);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 11px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow-popover);
+  animation: toast-in 0.25s ease;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  transition: opacity 0.25s;
+}
+.toast.is-leaving { opacity: 0; }
+.toast.critical { border-left-color: var(--red); }
+
+.toast-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.toast.critical .toast-icon { background: var(--red-soft); color: var(--red); }
+.toast-icon svg { width: 14px; height: 14px; }
+
+.toast-body { min-width: 0; }
+.toast-body b { display: block; font-size: 10.5px; margin-bottom: 2px; }
+.toast-body p { margin: 0; font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+.toast-body small { display: block; margin-top: 3px; font-size: 8.5px; color: var(--muted-2); }
+
+@media (max-width: 620px) {
+  .toasts { width: calc(100% - 24px); right: 12px; bottom: 12px; }
+}

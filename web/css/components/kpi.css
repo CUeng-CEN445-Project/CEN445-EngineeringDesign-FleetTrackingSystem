@@ -1,0 +1,54 @@
+/* ==========================================================================
+   KPI cards (sidebar header): vehicles, moving, open alarms, average speed
+   ========================================================================== */
+
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  background: linear-gradient(150deg, rgba(18, 32, 51, 0.9), rgba(10, 20, 34, 0.9));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+}
+
+.kpi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+}
+.kpi-icon svg { width: 17px; height: 17px; }
+.kpi-icon.teal { color: var(--accent); background: rgba(34, 211, 238, 0.1); }
+.kpi-icon.green { color: var(--green); background: var(--green-soft); }
+.kpi-icon.red { color: var(--red); background: var(--red-soft); }
+.kpi-icon.amber { color: var(--amber); background: var(--amber-soft); }
+
+.kpi-body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.kpi-body b { font-size: 19px; }
+.kpi-body span { font-size: 9.5px; color: var(--muted); margin-top: 2px; letter-spacing: 0.2px; }
+
+/* Glows while at least one alarm is open */
+.kpi.alarm-kpi.has-alarm {
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: alarm-glow 2s infinite;
+}
+
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+}

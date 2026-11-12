@@ -1,0 +1,135 @@
+# Continuous integration: runs on every push to main and on every pull request.
+#   lint    Ruff (rules in pyproject.toml) + JavaScript syntax check
+#   test    unit / integration tests on Linux and Windows, Python 3.10 – 3.14
+#   smoke   starts the real app and checks that a speeding alarm is raised
+#   docker  builds the container image and checks its health endpoint
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the run that is still in progress
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ruff
+        run: pipx run ruff==0.17.4 check --output-format=github .
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: JavaScript syntax
+        run: |
+          for file in web/js/*.js; do
+            node --check "$file"
+            echo "ok  $file"
+          done
+
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  smoke:
+    name: Smoke test (running app)
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Start the app
+        run: |
+          python app.py --no-open --port 8000 > app.log 2>&1 &
+          echo $! > app.pid
+          curl --fail --silent --show-error --retry 30 --retry-delay 1 --retry-all-errors \
+               "$BASE_URL/api/health"
+
+      - name: Dashboard and API respond
+        run: |
+          curl --fail --silent --show-error -o index.html "$BASE_URL/"
+          grep -q "<html" index.html
+          curl --fail --silent --show-error -o state.json "$BASE_URL/api/state"
+          python -c "import json; d = json.load(open('state.json')); assert len(d['vehicles']) == 8, d; print('vehicles:', len(d['vehicles']))"
+
+      - name: Speeding scenario raises an alarm
+        run: |
+          curl --fail --silent --show-error -X POST -H "Content-Type: application/json" \
+               -d '{"type":"speed"}' "$BASE_URL/api/vehicles/V-01/trigger"
+          for attempt in $(seq 1 20); do
+            curl --fail --silent --show-error -o alarms.json "$BASE_URL/api/alarms"
+            if python -c "import json, sys; a = json.load(open('alarms.json'))['alarms']; sys.exit(0 if any(x['vehicle_id'] == 'V-01' and x['type'] == 'SPEED' for x in a) else 1)"; then
+              echo "alarm raised after ${attempt} s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::no speeding alarm within 20 s"
+          exit 1
+
+      - name: Stop the app and show its log
+        if: always()
+        run: |
+          kill "$(cat app.pid)" 2>/dev/null || true
+          cat app.log
+
+  docker:
+    name: Docker image
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build --tag filotrack:ci .
+
+      - name: Run and check health
+        run: |
+          docker run --detach --name filotrack --publish 8000:8000 filotrack:ci
+          curl --fail --silent --show-error --retry 30 --retry-delay 1 --retry-all-errors \
+               http://127.0.0.1:8000/api/health
+
+      - name: Container log
+        if: always()
+        run: docker logs filotrack || true

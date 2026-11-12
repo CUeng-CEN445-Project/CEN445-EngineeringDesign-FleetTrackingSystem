@@ -1,0 +1,14 @@
+# Only app.py, backend/ and web/ are copied into the image; keep the build context small.
+.git
+.github
+.vscode
+.idea
+data
+docs
+tests
+**/__pycache__
+**/*.py[cod]
+*.log
+start.bat
+Dockerfile
+.dockerignore

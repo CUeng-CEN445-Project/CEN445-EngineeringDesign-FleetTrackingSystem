@@ -1,0 +1,12 @@
+# Keeps the GitHub Actions used by the workflows up to date (weekly pull requests).
+# The application itself has no third-party Python dependencies.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

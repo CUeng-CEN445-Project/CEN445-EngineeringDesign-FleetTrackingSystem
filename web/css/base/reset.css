@@ -1,0 +1,42 @@
+/* ==========================================================================
+   Base / reset
+   Element-level defaults only. No class selectors live here.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+
+html,
+body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 15% -10%, rgba(34, 211, 238, 0.08), transparent 60%),
+    radial-gradient(800px 500px at 95% 0%, rgba(167, 139, 250, 0.06), transparent 55%),
+    var(--bg);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers in bold text should not "jump" while values update every second */
+b,
+strong,
+.num { font-variant-numeric: tabular-nums; }
+
+button { font-family: inherit; }
+
+svg { flex-shrink: 0; }
+
+[hidden] { display: none !important; }
+
+/* Scrollbars (WebKit / Blink) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #22344c; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #2e4560; }
+
+@media (max-width: 900px) {
+  body { overflow: auto; }
+}

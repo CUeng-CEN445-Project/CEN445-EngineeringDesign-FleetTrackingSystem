@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="app.title">FiloTrack · Live Fleet Monitoring</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M7 20h18M9 20v4M23 20v4M10 20l2-6h8l2 6' stroke='%2322d3ee' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Third-party -->
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+
+<!-- Styles, in cascade order: base → layout → components → vendor overrides -->
+<link rel="stylesheet" href="/css/base/tokens.css">
+<link rel="stylesheet" href="/css/base/reset.css">
+<link rel="stylesheet" href="/css/base/animations.css">
+<link rel="stylesheet" href="/css/layout/shell.css">
+<link rel="stylesheet" href="/css/components/buttons.css">
+<link rel="stylesheet" href="/css/components/topbar.css">
+<link rel="stylesheet" href="/css/components/kpi.css">
+<link rel="stylesheet" href="/css/components/fleet-list.css">
+<link rel="stylesheet" href="/css/components/map.css">
+<link rel="stylesheet" href="/css/components/vehicle-marker.css">
+<link rel="stylesheet" href="/css/components/toast.css">
+<link rel="stylesheet" href="/css/components/panel.css">
+<link rel="stylesheet" href="/css/components/detail-panel.css">
+<link rel="stylesheet" href="/css/components/alarm-panel.css">
+<link rel="stylesheet" href="/css/components/modal.css">
+<link rel="stylesheet" href="/css/vendor/leaflet-theme.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 17h18"/>
+        <path d="M5 17v3M19 17v3"/>
+        <path d="M6 17l1.4-5.2A2 2 0 0 1 9.3 10h5.4a2 2 0 0 1 1.9 1.8L18 17"/>
+        <path d="M9 13.5h6"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <strong>FiloTrack</strong>
+      <span data-i18n="brand.subtitle">Live Fleet Monitoring Center</span>
+    </div>
+    <span class="sim-chip" data-i18n="brand.simChip">SIMULATION</span>
+  </div>
+
+  <div class="topbar-center">
+    <div class="conn" id="connBadge" role="status"><i></i><span id="connText" data-i18n="conn.connecting">Connecting…</span></div>
+    <div class="clock">
+      <b id="clock">--:--:--</b>
+      <span id="dateLabel">—</span>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="ctrl-btn" id="pauseBtn" type="button" data-i18n-title="sim.pauseTitle" title="Pause the simulation">
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <span data-i18n="sim.pause">Pause</span>
+    </button>
+    <div class="segmented" id="speedGroup" role="group" data-i18n-title="sim.speedTitle" title="Simulation speed">
+      <button type="button" data-speed="1" class="active">1×</button>
+      <button type="button" data-speed="2">2×</button>
+      <button type="button" data-speed="5">5×</button>
+    </div>
+    <div class="segmented" id="langGroup" role="group" data-i18n-title="lang.title" title="Language">
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="tr" lang="tr">TR</button>
+    </div>
+    <button class="icon-btn" id="soundBtn" type="button" title="Alarm sound on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="settingsBtn" type="button" data-i18n-title="settings.open" title="Alarm settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- Sidebar: KPIs and fleet list ---------------------------------------- -->
+  <aside class="sidebar">
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-icon teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18M5 17v3M19 17v3M6 17l1.4-5.2A2 2 0 0 1 9.3 10h5.4a2 2 0 0 1 1.9 1.8L18 17"/></svg>
+        </div>
+        <div class="kpi-body"><b id="kpiTotal">0</b><span data-i18n="kpi.total">Active vehicles</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg>
+        </div>
+        <div class="kpi-body"><b id="kpiMoving">0</b><span data-i18n="kpi.moving">Moving</span></div>
+      </div>
+      <div class="kpi alarm-kpi">
+        <div class="kpi-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3L12 3z"/><path d="M12 9v5M12 17h.01"/></svg>
+        </div>
+        <div class="kpi-body"><b id="kpiAlarms">0</b><span data-i18n="kpi.alarms">Open alarms</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 1 8-8"/><path d="M12 12l4-4"/></svg>
+        </div>
+        <div class="kpi-body"><b id="kpiAvg">0</b><span data-i18n="kpi.avgSpeed">Avg. speed · km/h</span></div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="fleet.title">Fleet</h2>
+        <p id="fleetSub">—</p>
+      </div>
+      <span class="live-pill"><i></i><span data-i18n="fleet.live">Live</span></span>
+    </div>
+
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="fleetSearch" type="search" autocomplete="off"
+             data-i18n-placeholder="fleet.search" placeholder="Search plate, driver or route…"
+             data-i18n-aria-label="fleet.search" aria-label="Search plate, driver or route…">
+    </div>
+
+    <div class="vehicle-list" id="vehicleList"></div>
+
+    <div class="storage-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+      <span id="storageInfo" data-i18n="storage.loading">Preparing time series…</span>
+    </div>
+  </aside>
+
+  <!-- Map ------------------------------------------------------------------ -->
+  <section class="map-section">
+    <div id="map"></div>
+
+    <div class="map-overlay map-title">
+      <span class="live-dot"></span>
+      <div>
+        <b data-i18n="map.title">Live map</b>
+        <small id="mapSubtitle" data-i18n="map.subtitleIdle">Istanbul · Route simulation</small>
+      </div>
+    </div>
+
+    <div class="map-overlay map-legend">
+      <div class="legend-row"><i class="dot ok"></i><span data-i18n="legend.normal">Normal driving</span></div>
+      <div class="legend-row"><i class="dot warn"></i><span data-i18n="legend.speed">Speeding</span></div>
+      <div class="legend-row"><i class="dot danger"></i><span data-i18n="legend.deviation">Off route</span></div>
+      <div class="legend-hint" data-i18n="legend.hint">Click a marker or a list item to follow a vehicle.</div>
+    </div>
+
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+  </section>
+
+  <!-- Right column: vehicle detail and alarm center ------------------------ -->
+  <aside class="rightbar">
+    <section class="panel detail-panel">
+      <div class="detail-top">
+        <div class="plate-wrap">
+          <span class="plate" id="detPlate">—</span>
+          <span class="vehicle-kind" id="detKind">—</span>
+        </div>
+        <span class="status-badge status-moving" id="detStatus">—</span>
+      </div>
+      <div class="driver-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <div><b id="detDriver">—</b><span id="detModel">—</span></div>
+        <button class="mini-btn" id="exportBtn" type="button" data-i18n-title="detail.exportTitle" title="Download the selected time range as CSV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
+          CSV
+        </button>
+      </div>
+
+      <div class="speed-block">
+        <div class="speed-top">
+          <div class="speed-value"><b id="detSpeed">0</b><span data-i18n="unit.speed">km/h</span></div>
+          <div class="speed-limit">
+            <span data-i18n="detail.speedLimit">Speed limit</span>
+            <b id="detLimit">—</b>
+            <span data-i18n="unit.speed">km/h</span>
+          </div>
+        </div>
+        <div class="speed-track"><div class="speed-fill" id="speedFill"></div></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="dcell"><span data-i18n="detail.route">Route</span><b id="detRoute">—</b></div>
+        <div class="dcell"><span data-i18n="detail.progress">Progress</span><b id="detProgress">—</b></div>
+        <div class="dcell"><span data-i18n="detail.offset">Route offset</span><b id="detOffset">0 m</b></div>
+        <div class="dcell"><span data-i18n="detail.odometer">Odometer</span><b id="detOdo">0 km</b></div>
+      </div>
+      <div class="route-track"><div class="route-fill" id="progressFill"></div></div>
+
+      <div class="chart-head">
+        <span data-i18n="chart.title">Speed history</span>
+        <select id="historyRange" class="range-select" data-i18n-aria-label="chart.title" aria-label="Speed history">
+          <option value="15" data-i18n="chart.range15">Last 15 min</option>
+          <option value="60" data-i18n="chart.range60" selected>Last 1 hour</option>
+          <option value="360" data-i18n="chart.range360">Last 6 hours</option>
+        </select>
+      </div>
+      <canvas id="speedChart" height="96"></canvas>
+
+      <div class="trigger-row">
+        <button class="trigger-btn" id="triggerSpeed" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20a8 8 0 1 1 8-8"/><path d="M12 12l4-4"/></svg>
+          <span data-i18n="trigger.speed">Speeding test</span>
+        </button>
+        <button class="trigger-btn danger" id="triggerDev" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l4-10 4 8 3-5 5 7"/><path d="M3 21h18"/></svg>
+          <span data-i18n="trigger.deviation">Off-route test</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel alarm-panel">
+      <div class="alarm-head">
+        <div>
+          <h2 data-i18n="alarms.title">Alarm Center</h2>
+          <p id="alarmSub">—</p>
+        </div>
+        <button class="mini-btn" id="ackAll" type="button" data-i18n="alarms.ackAll">Acknowledge all</button>
+      </div>
+      <div class="alarm-tabs" role="tablist">
+        <button class="active" type="button" role="tab" data-tab="open">
+          <span data-i18n="alarms.tabOpen">Active</span> <span class="count" id="openCount">0</span>
+        </button>
+        <button type="button" role="tab" data-tab="all"><span data-i18n="alarms.tabAll">All</span></button>
+      </div>
+      <div class="alarm-list" id="alarmList"></div>
+    </section>
+  </aside>
+</main>
+
+<!-- Alarm settings dialog --------------------------------------------------- -->
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <header>
+      <div>
+        <h3 id="settingsTitle" data-i18n="settings.title">Alarm Settings</h3>
+        <p data-i18n="settings.subtitle">Thresholds apply to new measurements.</p>
+      </div>
+      <button class="icon-btn" id="closeSettings" type="button" data-i18n-title="settings.close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body">
+      <label class="field">
+        <span>
+          <span data-i18n="settings.tolerance">Speed tolerance</span>
+          <b><output id="tolOut">5</output> <span data-i18n="unit.speed">km/h</span></b>
+        </span>
+        <input type="range" id="tolInput" min="0" max="30" step="1" value="5">
+        <small data-i18n="settings.toleranceHelp">Speeds this far above the limit count as a violation.</small>
+      </label>
+      <label class="field">
+        <span>
+          <span data-i18n="settings.deviation">Off-route threshold</span>
+          <b><output id="devOut">120</output> m</b>
+        </span>
+        <input type="range" id="devInput" min="20" max="400" step="10" value="120">
+        <small data-i18n="settings.deviationHelp">Moving further than this from the route centerline raises an alarm.</small>
+      </label>
+      <label class="field">
+        <span>
+          <span data-i18n="settings.retention">Data retention</span>
+          <b><output id="retOut">24</output> <span data-i18n="unit.hours">hours</span></b>
+        </span>
+        <input type="range" id="retInput" min="1" max="72" step="1" value="24">
+        <small data-i18n="settings.retentionHelp">Time-series records older than this are deleted automatically.</small>
+      </label>
+      <div class="modal-note" data-i18n="settings.note">
+        Alarms are confirmed over consecutive measurements; single-sample GPS noise does not raise an alarm.
+      </div>
+    </div>
+    <footer>
+      <button class="ghost-btn" id="cancelSettings" type="button" data-i18n="settings.cancel">Cancel</button>
+      <button class="primary-btn" id="saveSettings" type="button" data-i18n="settings.save">Save</button>
+    </footer>
+  </div>
+</div>
+
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

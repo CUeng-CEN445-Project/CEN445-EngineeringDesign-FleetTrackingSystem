@@ -1,0 +1,93 @@
+/* ==========================================================================
+   Map section: container, floating overlays (title, legend)
+   Leaflet's own controls are themed in vendor/leaflet-theme.css,
+   vehicle markers in components/vehicle-marker.css.
+   ========================================================================== */
+
+.map-section {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--map-bg);
+}
+
+/* Faint grid stays visible when map tiles cannot be loaded (offline) */
+#map {
+  position: absolute;
+  inset: 0;
+  background-color: var(--map-bg);
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Overlays ---------------------------------------------------------------- */
+.map-overlay {
+  position: absolute;
+  z-index: 500; /* above Leaflet panes (≤ 400), below toasts */
+  background: var(--overlay-bg);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+}
+
+.map-title {
+  top: 14px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+}
+.map-title b { display: block; font-size: 10px; letter-spacing: 1.5px; color: #c9e8ff; text-transform: uppercase; }
+.map-title small { display: block; font-size: 9px; color: var(--muted-2); margin-top: 2px; }
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+  animation: pulse 2s infinite;
+}
+
+/* Legend ------------------------------------------------------------------ */
+.map-legend {
+  bottom: 14px;
+  left: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+.legend-row { display: flex; align-items: center; gap: 7px; }
+.legend-hint {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 8.5px;
+  color: var(--muted-2);
+  max-width: 190px;
+  line-height: 1.4;
+}
+
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.dot.ok { background: var(--green); box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
+.dot.warn { background: var(--amber); box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
+.dot.danger { background: var(--red); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+
+/* Responsive -------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .map-section { order: 2; height: 58vh; min-height: 380px; }
+}
+
+@media (max-width: 620px) {
+  .map-legend { display: none; }
+}

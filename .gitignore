@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Runtime data (SQLite time-series database) and logs
+data/
+logs/
+*.log
+
+# Editor / operating system
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
