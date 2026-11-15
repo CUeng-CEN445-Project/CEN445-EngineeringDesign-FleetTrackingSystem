@@ -13,4 +13,3 @@
 # Not included in release archives created with `git archive`
 .github export-ignore
 .gitattributes export-ignore
-.dockerignore export-ignore

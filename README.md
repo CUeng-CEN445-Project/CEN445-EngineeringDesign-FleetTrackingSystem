@@ -29,18 +29,17 @@ the top bar).
 
 1. [Features](#features)
 2. [Quick start](#quick-start)
-3. [Docker](#docker)
-4. [CI/CD](#cicd)
-5. [Architecture](#architecture)
-6. [Time-series data model](#time-series-data-model)
-7. [Alarm rules](#alarm-rules)
-8. [API](#api)
-9. [Simulation](#simulation)
-10. [Languages (i18n)](#languages-i18n)
-11. [Frontend styles](#frontend-styles)
-12. [Project structure](#project-structure)
-13. [Screenshots](#screenshots)
-14. [Notes and limitations](#notes-and-limitations)
+3. [CI/CD](#cicd)
+4. [Architecture](#architecture)
+5. [Time-series data model](#time-series-data-model)
+6. [Alarm rules](#alarm-rules)
+7. [API](#api)
+8. [Simulation](#simulation)
+9. [Languages (i18n)](#languages-i18n)
+10. [Frontend styles](#frontend-styles)
+11. [Project structure](#project-structure)
+12. [Screenshots](#screenshots)
+13. [Notes and limitations](#notes-and-limitations)
 
 ---
 
@@ -145,23 +144,6 @@ ruff check .          # rules are configured in pyproject.toml
 
 ---
 
-## Docker
-
-```bash
-docker build -t filotrack .
-docker run -p 8000:8000 -v filotrack-data:/data filotrack
-```
-
-Open `http://127.0.0.1:8000`. The image runs as an unprivileged user, keeps the
-SQLite database in the `/data` volume and has a `HEALTHCHECK` on `/api/health`.
-Released images are published to the GitHub Container Registry (see below):
-
-```bash
-docker run -p 8000:8000 -v filotrack-data:/data ghcr.io/<owner>/<repo>:latest
-```
-
----
-
 ## CI/CD
 
 GitHub Actions workflows live in `.github/workflows/`.
@@ -174,7 +156,6 @@ manually (`workflow_dispatch`):
 | Lint | `ruff check` with the rules from `pyproject.toml`; `node --check` for `web/js/*.js` |
 | Tests | the full test suite on **Ubuntu and Windows** × **Python 3.10, 3.12, 3.14** (6 runs) |
 | Smoke test | starts `app.py`, checks the dashboard and `/api/state`, triggers a speeding scenario and waits for the alarm |
-| Docker image | builds the image, runs it and checks `/api/health` |
 
 **CD** (`release.yml`) runs when a version tag is pushed:
 
@@ -186,14 +167,11 @@ git push origin v1.0.0
 1. The test suite runs again.
 2. A **GitHub Release** is created with generated release notes and a source
    archive `filotrack-v1.0.0.zip` (built with `git archive`).
-3. A **Docker image** is pushed to `ghcr.io/<owner>/<repo>` with the tags `1.0.0`,
-   `1.0` and `latest`.
 
 Both use the built-in `GITHUB_TOKEN`; no secrets need to be configured. If the
 repository (or organization) restricts workflow permissions, allow
 *Read and write permissions* under **Settings → Actions → General**. Dependabot
-(`.github/dependabot.yml`) opens weekly pull requests for newer action and base
-image versions.
+(`.github/dependabot.yml`) opens weekly pull requests for newer action versions.
 
 ---
 
@@ -434,12 +412,11 @@ breakpoints are 1500 / 1260 / 900 / 620 px (listed in `tokens.css`); state class
 ```
 CEN317 - Engineering Design/
 ├── .github/
-│   ├── workflows/ci.yml      # CI: lint, tests (Linux + Windows), smoke test, Docker build
-│   ├── workflows/release.yml # CD on version tags: GitHub Release + image on ghcr.io
-│   └── dependabot.yml        # Weekly updates for actions and the base image
+│   ├── workflows/ci.yml      # CI: lint, tests (Linux + Windows), smoke test
+│   ├── workflows/release.yml # CD on version tags: GitHub Release with source archive
+│   └── dependabot.yml        # Weekly updates for the GitHub Actions versions
 ├── app.py                    # Entry point, CLI, server lifecycle
 ├── start.bat                 # Windows launcher (`start.bat test` → tests)
-├── Dockerfile                # Container image (python:3.12-slim, non-root, /data volume)
 ├── pyproject.toml            # Project metadata and Ruff lint configuration
 ├── backend/
 │   ├── api/

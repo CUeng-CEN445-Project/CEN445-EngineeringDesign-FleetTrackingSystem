@@ -2,7 +2,6 @@
 #   lint    Ruff (rules in pyproject.toml) + JavaScript syntax check
 #   test    unit / integration tests on Linux and Windows, Python 3.10 – 3.14
 #   smoke   starts the real app and checks that a speeding alarm is raised
-#   docker  builds the container image and checks its health endpoint
 name: CI
 
 on:
@@ -112,24 +111,3 @@ jobs:
         run: |
           kill "$(cat app.pid)" 2>/dev/null || true
           cat app.log
-
-  docker:
-    name: Docker image
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build
-        run: docker build --tag filotrack:ci .
-
-      - name: Run and check health
-        run: |
-          docker run --detach --name filotrack --publish 8000:8000 filotrack:ci
-          curl --fail --silent --show-error --retry 30 --retry-delay 1 --retry-all-errors \
-               http://127.0.0.1:8000/api/health
-
-      - name: Container log
-        if: always()
-        run: docker logs filotrack || true
