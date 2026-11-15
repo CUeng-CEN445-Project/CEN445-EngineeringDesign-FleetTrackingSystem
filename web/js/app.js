@@ -672,19 +672,26 @@ async function loadHistory() {
   }
 }
 
-/* Splits the trail into separate segments wherever recording was interrupted
-   (server restart, pause), so no straight line is drawn across the gap.
-   Returns an array of latlng arrays (a Leaflet multi-polyline). */
+/* Splits the trail into separate segments wherever the track is discontinuous
+   (server restart, pause, a position jump), so no straight line is drawn across
+   the gap. Returns an array of latlng arrays (a Leaflet multi-polyline). */
 function splitTrail(points) {
+  const median = (arr) => {
+    const s = [...arr].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)] || 0;
+  };
   const gaps = [];
-  for (let i = 1; i < points.length; i++) gaps.push(points[i].ts - points[i - 1].ts);
-  const sorted = [...gaps].sort((a, b) => a - b);
-  const typical = sorted[Math.floor(sorted.length / 2)] || 1000;
-  const maxGap = Math.max(5000, typical * 3);
+  const steps = [];
+  for (let i = 1; i < points.length; i++) {
+    gaps.push(points[i].ts - points[i - 1].ts);
+    steps.push(L.latLng(points[i - 1].lat, points[i - 1].lng).distanceTo([points[i].lat, points[i].lng]));
+  }
+  const maxGap = Math.max(5000, median(gaps) * 3);
+  const maxStep = Math.max(500, median(steps) * 4); // meters; normal driving moves far less per point
 
   const segments = [[[points[0].lat, points[0].lng]]];
   for (let i = 1; i < points.length; i++) {
-    if (gaps[i - 1] > maxGap) segments.push([]);
+    if (gaps[i - 1] > maxGap || steps[i - 1] > maxStep) segments.push([]);
     segments[segments.length - 1].push([points[i].lat, points[i].lng]);
   }
   return segments.filter((s) => s.length > 1);

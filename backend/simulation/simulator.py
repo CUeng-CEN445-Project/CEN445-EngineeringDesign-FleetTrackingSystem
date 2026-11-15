@@ -52,15 +52,21 @@ class Simulator(threading.Thread):
     # ------------------------------------------------------------------ setup
     def _build_fleet(self) -> list[VehicleSim]:
         odometers = {v["id"]: float(v.get("odometer_m") or 0.0) for v in self.db.vehicles.all()}
-        return [
-            VehicleSim(
+        fleet = []
+        for idx, cfg in enumerate(VEHICLES):
+            vehicle = VehicleSim(
                 cfg,
                 ROUTES[cfg["route_id"]],
                 odometer_m=odometers.get(cfg["id"], 0.0),
                 start_fraction=idx / len(VEHICLES),  # spread the vehicles along their routes
             )
-            for idx, cfg in enumerate(VEHICLES)
-        ]
+            # After a restart, continue where the vehicle was last recorded so the
+            # stored track has no jump (the map trail would draw it as a straight line).
+            last = self.db.positions.latest(cfg["id"])
+            if last and last["route_id"] == cfg["route_id"]:
+                vehicle.resume(last["progress"], last["heading"], last["speed"])
+            fleet.append(vehicle)
+        return fleet
 
     @staticmethod
     def _log_alarm(alarm: dict) -> None:

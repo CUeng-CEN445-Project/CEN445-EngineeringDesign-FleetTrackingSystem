@@ -35,6 +35,17 @@ class VehicleSimTest(unittest.TestCase):
         self.assertGreater(self.vehicle.speed, 0.5 * self.vehicle.speed_limit)
         self.assertLess(self.vehicle.speed, self.vehicle.speed_limit)
 
+    def test_resume_continues_from_stored_position(self):
+        """After a restart the vehicle must not jump (the map trail would show a straight line)."""
+        self.run_steps(400, dt=5.0)  # long enough to turn around at a route end
+        s = self.vehicle.state(0)
+        cfg = self.vehicle.cfg
+        resumed = VehicleSim(cfg, ROUTES[cfg["route_id"]], start_fraction=0.9)
+        resumed.resume(s["progress"], s["heading"], s["speed"])
+        self.assertAlmostEqual(resumed.lat, s["lat"], places=3)
+        self.assertAlmostEqual(resumed.lng, s["lng"], places=3)
+        self.assertEqual(resumed.direction, self.vehicle.direction)
+
     def test_cruise_stays_under_limit(self):
         self.run_steps(60)
         self.assertLessEqual(self.vehicle.speed, self.vehicle.speed_limit)

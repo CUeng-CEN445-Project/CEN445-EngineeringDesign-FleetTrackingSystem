@@ -50,6 +50,17 @@ class VehicleSim:
         self.offset_m = 0.0
         self._update_position(time.monotonic())
 
+    def resume(self, progress: float, heading: float, speed: float = 0.0) -> None:
+        """Continues from a stored position (after a restart) instead of jumping to the start point."""
+        self.distance_m = self.geom.total_m * max(0.0, min(1.0, progress))
+        if self.route["mode"] != "loop":
+            # The stored heading tells which way the vehicle was driving on the route
+            _, _, tangent = self.geom.position_at(self.distance_m)
+            diff = abs((heading - tangent + 180.0) % 360.0 - 180.0)
+            self.direction = -1 if diff > 90.0 else 1
+        self.speed = max(0.0, float(speed))
+        self._update_position(time.monotonic())
+
     # ------------------------------------------------------------------ scenarios
     def trigger_speed(self, now: float, duration: float = 15.0) -> None:
         """Drives 15–28 km/h above the limit for `duration` seconds."""

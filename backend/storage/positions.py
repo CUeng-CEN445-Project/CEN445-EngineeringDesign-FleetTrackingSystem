@@ -49,6 +49,8 @@ class PositionRepository(Repository):
         The range is split into equal time buckets (at least 500 ms) and the
         positions in each bucket are averaged.
         """
+        # Note: a bucket that straddles a restart averages two distant points; the
+        # dashboard splits the trail at such jumps (web/js/app.js splitTrail).
         span = max(1, end_ts - start_ts)
         bucket = max(500, span // max_points)
         with self._lock:
@@ -77,6 +79,19 @@ class PositionRepository(Repository):
             }
             for r in rows
         ]
+
+    def latest(self, vehicle_id: str) -> dict | None:
+        """Most recent measurement of a vehicle (used to resume the simulation after a restart)."""
+        with self._lock:
+            r = self._conn.execute(
+                """
+                SELECT ts, lat, lng, speed, heading, route_id, progress
+                FROM positions WHERE vehicle_id = ?
+                ORDER BY ts DESC LIMIT 1
+                """,
+                (vehicle_id,),
+            ).fetchone()
+        return dict(r) if r else None
 
     def raw(self, vehicle_id: str, start_ts: int, end_ts: int, limit: int = 20000) -> list[dict]:
         """Raw measurements ordered by time (used for CSV export)."""
