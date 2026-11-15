@@ -25,6 +25,7 @@ const els = {
   speedGroup: $('#speedGroup'),
   langGroup: $('#langGroup'),
   soundBtn: $('#soundBtn'),
+  themeBtn: $('#themeBtn'),
   settingsBtn: $('#settingsBtn'),
   kpiTotal: $('#kpiTotal'),
   kpiMoving: $('#kpiMoving'),
@@ -73,13 +74,21 @@ const els = {
 };
 
 /* ------------------------------------------------------------------ constants */
-/* Marker / card colors per vehicle status (labels come from i18n: status.*) */
+/* Marker / card colors per vehicle status (labels come from i18n: status.*).
+   These are CSS variable references, so markers and cards follow the theme. */
 const STATUS_COLORS = {
-  moving: '#22c55e',
-  speed: '#f59e0b',
-  deviation: '#ef4444',
-  stopped: '#64748b',
+  moving: 'var(--green)',
+  speed: 'var(--amber)',
+  deviation: 'var(--red)',
+  stopped: 'var(--stopped)',
 };
+
+/* Base map per theme (Esri canvas tiles; same attribution for both) */
+const TILE_URLS = {
+  dark: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  light: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+};
+const THEME_STORAGE_KEY = 'filotrack.theme';
 
 const MARKER_STATUS_CLASSES = Object.keys(STATUS_COLORS).map((status) => `status-${status}`);
 
@@ -100,6 +109,8 @@ const ICONS = {
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7V5z"/></svg>',
   soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>',
   soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
 };
 
 /* ------------------------------------------------------------------ state */
@@ -114,6 +125,7 @@ const state = {
   seenAlarmIds: null,     // open alarm ids already notified (null until the first snapshot)
   sound: true,
   map: null,
+  tileLayer: null,
   markers: {},
   routeLines: {},
   styledFor: null,        // vehicle id the route highlighting was last applied for
@@ -150,13 +162,9 @@ function formatRelative(ts, now = Date.now()) {
   return new Date(ts).toLocaleDateString(I18n.localeTag());
 }
 
-function hexToRgba(hex, alpha) {
-  const h = hex.replace('#', '');
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
+/** Resolved value of a design token (CSS custom property on <html>), for canvas / Leaflet. */
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 function statusOf(vehicle) {
@@ -233,7 +241,7 @@ function initMap() {
   });
   state.map = map;
 
-  L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  state.tileLayer = L.tileLayer(TILE_URLS[currentTheme()], {
     maxZoom: 18,
     maxNativeZoom: 16,
     attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
@@ -246,7 +254,7 @@ function initMap() {
     state.routeLines[routeId] = L.polyline(route.points, {
       color: route.color,
       weight: 3,
-      opacity: 0.28,
+      opacity: Number(cssVar('--route-opacity')) || 0.24,
       dashArray: '2 6',
       lineCap: 'round',
       interactive: false,
@@ -262,11 +270,14 @@ function initMap() {
 /* Highlights the selected vehicle's route and marker. */
 function applySelectionStyles() {
   const selected = selectedVehicle();
+  const routeOpacity = Number(cssVar('--route-opacity')) || 0.24;
+  const activeOpacity = Number(cssVar('--route-opacity-active')) || 0.85;
+  const corridorOpacity = Number(cssVar('--route-corridor-opacity')) || 0.07;
   Object.entries(state.routeLines).forEach(([routeId, line]) => {
     const active = selected && selected.route_id === routeId;
     line.setStyle({
       weight: active ? 4.5 : 3,
-      opacity: active ? 0.85 : 0.24,
+      opacity: active ? activeOpacity : routeOpacity,
       dashArray: active ? null : '2 6',
     });
   });
@@ -283,12 +294,14 @@ function applySelectionStyles() {
       state.corridor = L.polyline(route.points, {
         color: route.color,
         weight: 20,
-        opacity: 0.07,
+        opacity: corridorOpacity,
         lineCap: 'round',
         interactive: false,
       }).addTo(state.map);
       state.corridor.bringToBack();
     }
+  } else if (state.corridor) {
+    state.corridor.setStyle({ opacity: corridorOpacity }); // theme may have changed
   }
 
   Object.entries(state.markers).forEach(([vehicleId, marker]) => {
@@ -332,7 +345,6 @@ function renderMarkers(snap) {
       el.classList.add(`status-${status}`);
       el.classList.toggle('selected', v.vehicle_id === state.selectedId);
       el.style.setProperty('--vc', STATUS_COLORS[status]);
-      el.style.setProperty('--glow', hexToRgba(STATUS_COLORS[status], 0.5));
       const arrow = el.querySelector('.veh-arrow');
       if (arrow) arrow.style.transform = `rotate(${v.heading || 0}deg)`;
       const label = el.querySelector('.veh-label');
@@ -485,7 +497,7 @@ function updateVehicleCard(card, v) {
   const pct = Math.min(100, Math.max(0, (v.speed / (v.speed_limit || 1)) * 100));
   refs.bar.style.width = pct + '%';
   card.style.setProperty('--vc', STATUS_COLORS[status]);
-  card.style.setProperty('--rc', v.route_color || '#22d3ee');
+  card.style.setProperty('--rc', v.route_color || 'var(--accent)');
   card.classList.toggle('active', v.vehicle_id === state.selectedId);
 }
 
@@ -666,21 +678,21 @@ function drawHistory(points) {
   if (points.length < 2) return;
 
   const latlngs = points.map((p) => [p.lat, p.lng]);
-  const color = selectedVehicle()?.route_color || '#22d3ee';
+  const color = selectedVehicle()?.route_color || cssVar('--accent');
 
   // Wide colored glow + thin bright core
   L.polyline(latlngs, { color, weight: 5, opacity: 0.25, lineCap: 'round', interactive: false })
     .addTo(state.historyLayer);
-  L.polyline(latlngs, { color: '#e8f7ff', weight: 1.6, opacity: 0.55, lineCap: 'round', interactive: false })
+  L.polyline(latlngs, { color: cssVar('--trail-core'), weight: 1.6, opacity: 0.55, lineCap: 'round', interactive: false })
     .addTo(state.historyLayer);
 
   const start = points[0];
   const end = points[points.length - 1];
   L.circleMarker([start.lat, start.lng], {
-    radius: 4, color: '#22c55e', weight: 2, fillColor: '#0b1727', fillOpacity: 1, interactive: false,
+    radius: 4, color: cssVar('--green'), weight: 2, fillColor: cssVar('--marker-fill'), fillOpacity: 1, interactive: false,
   }).addTo(state.historyLayer).bindTooltip(t('map.trailStart'), { direction: 'top' });
   L.circleMarker([end.lat, end.lng], {
-    radius: 4, color: '#22d3ee', weight: 2, fillColor: '#22d3ee', fillOpacity: 0.8, interactive: false,
+    radius: 4, color: cssVar('--chart-line'), weight: 2, fillColor: cssVar('--chart-line'), fillOpacity: 0.8, interactive: false,
   }).addTo(state.historyLayer);
 }
 
@@ -718,12 +730,13 @@ function drawSpeedChart() {
   const limit = selectedVehicle()?.speed_limit || 50;
   const data = state.speedSeries;
   const maxVal = Math.max(limit * 1.4, ...data.map((d) => d.max || 0), 20);
+  const font = cssVar('--font-sans') || 'sans-serif';
   const padTop = 10;
   const padBottom = 14;
   const plotH = height - padTop - padBottom;
 
   // Horizontal grid lines
-  ctx.strokeStyle = 'rgba(148,178,214,0.08)';
+  ctx.strokeStyle = cssVar('--chart-grid');
   ctx.lineWidth = 1;
   for (let i = 0; i <= 2; i++) {
     const y = padTop + (plotH / 2) * i;
@@ -734,8 +747,8 @@ function drawSpeedChart() {
   }
 
   if (data.length < 2) {
-    ctx.fillStyle = 'rgba(139,163,192,0.6)';
-    ctx.font = '10px "Segoe UI", sans-serif';
+    ctx.fillStyle = cssVar('--chart-label');
+    ctx.font = `10px ${font}`;
     ctx.textAlign = 'center';
     ctx.fillText(t('chart.collecting'), rect.width / 2, height / 2);
     return;
@@ -754,7 +767,7 @@ function drawSpeedChart() {
   // Speed limit (dashed)
   const limitY = yOf(limit);
   ctx.setLineDash([3, 4]);
-  ctx.strokeStyle = 'rgba(245,158,11,0.45)';
+  ctx.strokeStyle = cssVar('--chart-limit');
   ctx.beginPath();
   ctx.moveTo(0, limitY);
   ctx.lineTo(rect.width, limitY);
@@ -763,8 +776,8 @@ function drawSpeedChart() {
 
   // Filled area under the average speed
   const gradient = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
-  gradient.addColorStop(0, 'rgba(34,211,238,0.22)');
-  gradient.addColorStop(1, 'rgba(34,211,238,0)');
+  gradient.addColorStop(0, cssVar('--chart-fill'));
+  gradient.addColorStop(1, cssVar('--chart-fill-end'));
   tracePath();
   ctx.lineTo(rect.width, padTop + plotH);
   ctx.lineTo(0, padTop + plotH);
@@ -774,7 +787,7 @@ function drawSpeedChart() {
 
   // Average speed line
   tracePath();
-  ctx.strokeStyle = '#22d3ee';
+  ctx.strokeStyle = cssVar('--chart-line');
   ctx.lineWidth = 1.6;
   ctx.lineJoin = 'round';
   ctx.stroke();
@@ -783,19 +796,19 @@ function drawSpeedChart() {
   const last = data[data.length - 1];
   ctx.beginPath();
   ctx.arc(xOf(last.ts), yOf(last.avg), 2.6, 0, Math.PI * 2);
-  ctx.fillStyle = '#7dd3fc';
+  ctx.fillStyle = cssVar('--chart-dot');
   ctx.fill();
 
   // Labels
-  ctx.font = '8px "Segoe UI", sans-serif';
-  ctx.fillStyle = 'rgba(139,163,192,0.65)';
+  ctx.font = `8px ${font}`;
+  ctx.fillStyle = cssVar('--chart-label');
   ctx.textAlign = 'left';
   ctx.fillText(t('chart.max', { value: Math.round(Math.max(...data.map((d) => d.max || 0))) }), 0, 8);
   ctx.textAlign = 'right';
-  ctx.fillStyle = 'rgba(245,158,11,0.75)';
+  ctx.fillStyle = cssVar('--chart-limit-label');
   ctx.fillText(t('chart.limit', { value: Math.round(limit) }), rect.width, 8);
   ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(95,120,153,0.75)';
+  ctx.fillStyle = cssVar('--chart-label');
   ctx.fillText(formatTime(firstTs), 0, height - 2);
   ctx.textAlign = 'right';
   ctx.fillText(formatTime(lastTs), rect.width, height - 2);
@@ -969,6 +982,37 @@ async function saveSettings() {
   }
 }
 
+/* ------------------------------------------------------------------ theme */
+/* index.html sets data-theme before first paint; this section only switches it. */
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function savedTheme() {
+  try { return window.localStorage.getItem(THEME_STORAGE_KEY); } catch (err) { return null; }
+}
+
+function updateThemeButton() {
+  const toLight = currentTheme() === 'dark';
+  els.themeBtn.innerHTML = toLight ? ICONS.sun : ICONS.moon;
+  els.themeBtn.title = t(toLight ? 'theme.toLight' : 'theme.toDark');
+  els.themeBtn.setAttribute('aria-label', els.themeBtn.title);
+}
+
+/* CSS follows the attribute by itself; the canvas chart and Leaflet layers read
+   their colors once when drawn, so they are redrawn here. */
+function setTheme(theme, persist = true) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (persist) {
+    try { window.localStorage.setItem(THEME_STORAGE_KEY, theme); } catch (err) { /* not persisted */ }
+  }
+  updateThemeButton();
+  if (state.tileLayer) state.tileLayer.setUrl(TILE_URLS[theme]);
+  if (state.map) applySelectionStyles(); // route opacities differ per theme
+  drawSpeedChart();
+  loadHistory();
+}
+
 /* ------------------------------------------------------------------ language */
 function syncLanguageButtons() {
   const current = I18n.getLocale();
@@ -982,6 +1026,7 @@ function syncLanguageButtons() {
 /* Static text is re-translated by I18n itself; everything rendered from data is redrawn here. */
 function onLocaleChange() {
   syncLanguageButtons();
+  updateThemeButton();
   updateClock();
   setConnection(state.online);
   if (state.snapshot) {
@@ -1006,6 +1051,11 @@ function bindUI() {
   I18n.onChange(onLocaleChange);
 
   els.soundBtn.addEventListener('click', () => setSound(!state.sound));
+  els.themeBtn.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
+  // Follow the OS setting live until the user picks a theme explicitly
+  window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change', (ev) => {
+    if (!savedTheme()) setTheme(ev.matches ? 'light' : 'dark', false);
+  });
   els.settingsBtn.addEventListener('click', openSettings);
   els.closeSettings.addEventListener('click', closeSettings);
   els.cancelSettings.addEventListener('click', closeSettings);
@@ -1067,6 +1117,7 @@ function updateClock() {
 async function init() {
   I18n.translateDom();
   syncLanguageButtons();
+  updateThemeButton();
   updateClock();
   setInterval(updateClock, 1000);
   bindUI();

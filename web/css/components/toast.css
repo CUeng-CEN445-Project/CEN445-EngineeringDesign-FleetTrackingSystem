@@ -17,10 +17,10 @@
 
 .toast {
   pointer-events: auto;
-  background: rgba(10, 20, 34, 0.95);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--amber);
-  border-radius: 11px;
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-md);
   padding: 10px 12px;
   box-shadow: var(--shadow-popover);
   animation: toast-in 0.25s ease;
@@ -35,7 +35,7 @@
 .toast-icon {
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: grid;
   place-items: center;
   background: var(--amber-soft);

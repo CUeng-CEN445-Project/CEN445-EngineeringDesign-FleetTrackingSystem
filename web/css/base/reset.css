@@ -12,10 +12,7 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--text);
-  background:
-    radial-gradient(900px 500px at 15% -10%, rgba(34, 211, 238, 0.08), transparent 60%),
-    radial-gradient(800px 500px at 95% 0%, rgba(167, 139, 250, 0.06), transparent 55%),
-    var(--bg);
+  background: var(--bg);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -24,6 +21,9 @@ body {
 b,
 strong,
 .num { font-variant-numeric: tabular-nums; }
+
+/* Monospaced readouts: clock, timestamps */
+.mono { font-family: var(--font-mono); }
 
 button { font-family: inherit; }
 
@@ -34,8 +34,8 @@ svg { flex-shrink: 0; }
 /* Scrollbars (WebKit / Blink) */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #22344c; border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: #2e4560; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
 
 @media (max-width: 900px) {
   body { overflow: auto; }

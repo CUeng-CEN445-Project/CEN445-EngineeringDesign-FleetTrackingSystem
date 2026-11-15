@@ -46,6 +46,9 @@ const I18n = (() => {
       'sound.on': 'Alarm sound on',
       'sound.off': 'Alarm sound off',
 
+      'theme.toLight': 'Switch to light theme',
+      'theme.toDark': 'Switch to dark theme',
+
       'unit.speed': 'km/h',
       'unit.hours': 'hours',
 
@@ -178,6 +181,9 @@ const I18n = (() => {
 
       'sound.on': 'Alarm sesi açık',
       'sound.off': 'Alarm sesi kapalı',
+
+      'theme.toLight': 'Açık temaya geç',
+      'theme.toDark': 'Koyu temaya geç',
 
       'unit.speed': 'km/sa',
       'unit.hours': 'saat',

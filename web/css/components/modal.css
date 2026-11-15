@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(3, 8, 14, 0.72);
+  background: var(--backdrop);
   backdrop-filter: blur(5px);
   display: grid;
   place-items: center;
@@ -14,10 +14,11 @@
 
 .modal {
   width: min(94vw, 420px);
-  background: linear-gradient(160deg, #101e31, var(--panel-3));
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-modal);
+  border-top: 3px solid var(--accent-fill);
   animation: modal-in 0.18s ease;
 }
 
@@ -27,7 +28,7 @@
   justify-content: space-between;
   padding: 16px 18px 0;
 }
-.modal h3 { margin: 0; font-size: 15px; }
+.modal h3 { margin: 0; font-size: 14px; letter-spacing: 1.2px; text-transform: uppercase; }
 .modal header p { margin: 3px 0 0; font-size: 10px; color: var(--muted-2); }
 
 .modal-body {
@@ -59,9 +60,10 @@
 .modal-note {
   font-size: 9.5px;
   color: var(--muted-2);
-  background: rgba(34, 211, 238, 0.05);
-  border: 1px solid rgba(34, 211, 238, 0.14);
-  border-radius: 8px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-line);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   line-height: 1.45;
 }

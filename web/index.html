@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n="app.title">FiloTrack · Live Fleet Monitoring</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M7 20h18M9 20v4M23 20v4M10 20l2-6h8l2 6' stroke='%2322d3ee' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9f03a'/%3E%3Cpath d='M7 20h18M9 20v4M23 20v4M10 20l2-6h8l2 6' stroke='%23151a02' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Theme: apply the saved choice (or the OS setting) before first paint so
+     the page never flashes in the wrong colors. app.js owns the toggle. -->
+<script>
+  (function () {
+    var theme = null;
+    try { theme = window.localStorage.getItem('filotrack.theme'); } catch (err) { /* storage blocked */ }
+    if (theme !== 'light' && theme !== 'dark') {
+      theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
 
 <!-- Third-party -->
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -49,7 +62,7 @@
   <div class="topbar-center">
     <div class="conn" id="connBadge" role="status"><i></i><span id="connText" data-i18n="conn.connecting">Connecting…</span></div>
     <div class="clock">
-      <b id="clock">--:--:--</b>
+      <b id="clock" class="mono">--:--:--</b>
       <span id="dateLabel">—</span>
     </div>
   </div>
@@ -68,6 +81,7 @@
       <button type="button" data-lang="en" lang="en">EN</button>
       <button type="button" data-lang="tr" lang="tr">TR</button>
     </div>
+    <button class="icon-btn" id="themeBtn" type="button" title="Switch theme"></button>
     <button class="icon-btn" id="soundBtn" type="button" title="Alarm sound on">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/>

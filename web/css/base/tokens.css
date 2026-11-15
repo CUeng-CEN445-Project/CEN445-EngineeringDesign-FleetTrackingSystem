@@ -3,6 +3,17 @@
    Every color, radius, shadow and size that is reused across components.
    Components must reference these variables instead of hard-coding values.
 
+   Themes
+     Dark  "Night shift"  warm asphalt surfaces, hi-vis lime accent (default)
+     Light "Day shift"    warm paper surfaces, olive / lime accent
+   The theme is chosen by `data-theme` on <html>; a tiny inline script in
+   index.html sets it before first paint (saved choice, else the OS setting).
+
+   Accent tokens
+     --accent        lines and text in the brand color (contrast-safe)
+     --accent-fill   solid highlight surface (buttons, active chips, logo)
+     --on-accent     text / icons placed on --accent-fill
+
    Breakpoints (CSS variables cannot be used inside media queries, so the
    values below are repeated in component files; keep them in sync):
      xl  max-width: 1500px   narrower side columns
@@ -11,62 +22,184 @@
      sm  max-width:  620px   phone
    ========================================================================== */
 
+/* Dark: "Night shift" ------------------------------------------------------ */
 :root {
+  color-scheme: dark;
+
   /* Surfaces */
-  --bg: #060c16;
-  --bg-soft: #0a1320;
-  --panel: #0c1626;
-  --panel-2: #101d30;
-  --panel-3: #0a1422;
-  --panel-hover: #14243a;
-  --map-bg: #08111d;
-  --overlay-bg: rgba(8, 16, 28, 0.82);
-  --inset-bg: rgba(8, 18, 31, 0.7);
+  --bg: #11100e;
+  --bg-soft: #161512;
+  --panel: #1a1916;
+  --panel-2: #221f1b;
+  --panel-3: #151411;
+  --panel-hover: #2b2822;
+  --map-bg: #0e0d0c;
+  --map-grid: rgba(237, 229, 214, 0.035);
+  --overlay-bg: rgba(22, 21, 18, 0.88);
+  --inset-bg: #141310;
+  --topbar-bg: rgba(17, 16, 14, 0.9);
+  --backdrop: rgba(8, 7, 6, 0.72);
 
   /* Borders */
-  --border: #1c2c42;
-  --border-strong: #2d425e;
-  --border-soft: rgba(148, 178, 214, 0.1);
+  --border: #2e2b25;
+  --border-strong: #4a453c;
+  --border-soft: rgba(237, 229, 214, 0.075);
 
   /* Text */
-  --text: #e8f0fb;
-  --text-bright: #f3f9ff;
-  --muted: #8ba3c0;
-  --muted-2: #5f7899;
+  --text: #ece7de;
+  --text-bright: #fbf8f2;
+  --muted: #a8a093;
+  --muted-2: #797164;
 
   /* Brand */
-  --accent: #22d3ee;
-  --accent-2: #2dd4bf;
-  --accent-dim: rgba(34, 211, 238, 0.12);
-  --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-  --on-accent: #04121b;
+  --accent: #c9f03a;
+  --accent-fill: #c9f03a;
+  --accent-dim: rgba(201, 240, 58, 0.12);
+  --accent-line: rgba(201, 240, 58, 0.5);
+  --on-accent: #151a02;
 
   /* Status colors and their translucent backgrounds */
-  --green: #22c55e;
-  --green-soft: rgba(34, 197, 94, 0.1);
-  --amber: #f59e0b;
-  --amber-soft: rgba(245, 158, 11, 0.12);
-  --amber-text: #fbbf24;
-  --red: #ef4444;
-  --red-soft: rgba(239, 68, 68, 0.12);
-  --red-text: #f87171;
-  --muted-soft: rgba(139, 163, 192, 0.1);
-  --violet: #a78bfa;
+  --green: #3ccf91;
+  --green-soft: rgba(60, 207, 145, 0.12);
+  --amber: #ffa62b;
+  --amber-soft: rgba(255, 166, 43, 0.13);
+  --amber-text: #ffbe5c;
+  --red: #ff5a5f;
+  --red-soft: rgba(255, 90, 95, 0.13);
+  --red-text: #ff8b8f;
+  --stopped: #8c8478;
+  --muted-soft: rgba(168, 160, 147, 0.12);
 
   /* Progress / speed tracks */
-  --track: rgba(148, 178, 214, 0.1);
+  --track: rgba(237, 229, 214, 0.08);
+
+  /* Licence-plate chip (Turkish plate: white field, blue country band) */
+  --plate-bg: #e9e5db;
+  --plate-text: #14130f;
+  --plate-band: #2153c9;
+  --plate-border: #000000;
+
+  /* Map markers and trail */
+  --marker-fill: #1a1916;
+  --marker-label-bg: rgba(17, 16, 14, 0.88);
+  --marker-label-text: #e6e0d5;
+  --trail-core: #fbf8f2;
+  --tile-filter: brightness(0.5) contrast(1.2) saturate(0.35) sepia(0.25);
+  --overlay-filter: none;         /* routes, trail (canvas overlay pane) */
+  --route-opacity: 0.24;          /* routes of unselected vehicles (read by app.js) */
+  --route-opacity-active: 0.85;   /* route of the selected vehicle */
+  --route-corridor-opacity: 0.07; /* wide band under the selected route */
+
+  /* Canvas speed chart (read by app.js, so keep them literal colors) */
+  --chart-grid: rgba(237, 229, 214, 0.07);
+  --chart-line: #c9f03a;
+  --chart-fill: rgba(201, 240, 58, 0.18);
+  --chart-fill-end: rgba(201, 240, 58, 0);
+  --chart-dot: #f2ffc2;
+  --chart-label: rgba(168, 160, 147, 0.8);
+  --chart-limit: rgba(255, 166, 43, 0.55);
+  --chart-limit-label: rgba(255, 166, 43, 0.9);
+
+  /* Scrollbar */
+  --scrollbar: #34302a;
+  --scrollbar-hover: #4a453c;
 
   /* Shape */
-  --radius: 16px;
-  --radius-md: 13px;
-  --radius-sm: 10px;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  --shadow-popover: 0 14px 34px rgba(0, 0, 0, 0.45);
+  --radius: 8px;
+  --radius-md: 6px;
+  --radius-sm: 5px;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 16px 40px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0 14px 34px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.6);
 
-  /* Typography */
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  /* Typography — Bahnschrift is the DIN-style road-sign face that ships
+     with Windows; the fallbacks keep the same condensed, technical feel. */
+  --font-sans: "Bahnschrift", "DIN Alternate", "DIN 2014", "Barlow", "Roboto Condensed", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", "JetBrains Mono", "SF Mono", "Consolas", ui-monospace, monospace;
 
   /* Layout */
   --topbar-height: 64px;
   --gap: 12px;
+}
+
+/* Light: "Day shift" -------------------------------------------------------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #ecebe5;
+  --bg-soft: #e5e3dc;
+  --panel: #fbfaf6;
+  --panel-2: #f2f0ea;
+  --panel-3: #fbfaf6;
+  --panel-hover: #e9e6de;
+  --map-bg: #e3e0d8;
+  --map-grid: rgba(43, 37, 28, 0.05);
+  --overlay-bg: rgba(251, 250, 246, 0.92);
+  --inset-bg: #f4f2ed;
+  --topbar-bg: rgba(251, 250, 246, 0.9);
+  --backdrop: rgba(40, 36, 28, 0.35);
+
+  --border: #d9d5cb;
+  --border-strong: #bab4a6;
+  --border-soft: rgba(43, 37, 28, 0.1);
+
+  --text: #1b1a17;
+  --text-bright: #0b0a08;
+  --muted: #5c574d;
+  --muted-2: #888276;
+
+  --accent: #4f7300;
+  --accent-fill: #c6ef3c;
+  --accent-dim: rgba(120, 165, 0, 0.13);
+  --accent-line: rgba(79, 115, 0, 0.45);
+  --on-accent: #172000;
+
+  --green: #12875a;
+  --green-soft: rgba(18, 135, 90, 0.1);
+  --amber: #c96a00;
+  --amber-soft: rgba(230, 130, 0, 0.12);
+  --amber-text: #a85700;
+  --red: #d42a3c;
+  --red-soft: rgba(212, 42, 60, 0.09);
+  --red-text: #b8202f;
+  --stopped: #8a8478;
+  --muted-soft: rgba(92, 87, 77, 0.1);
+
+  --track: rgba(43, 37, 28, 0.09);
+
+  --plate-bg: #ffffff;
+  --plate-text: #14130f;
+  --plate-band: #2153c9;
+  --plate-border: #1b1a17;
+
+  --marker-fill: #ffffff;
+  --marker-label-bg: rgba(251, 250, 246, 0.94);
+  --marker-label-text: #1b1a17;
+  --trail-core: #1b1a17;
+  /* The light base map is very pale (land ~#e5, roads #ff): pull it down to a
+     mid-light gray and stretch the contrast so roads stay near-white against
+     the land and water reads darker. Without this, land and roads differ by
+     only a few levels and wash out on bright screens. Also deepen the pastel
+     route colors so they read on a light background. */
+  --tile-filter: brightness(0.82) contrast(1.5) saturate(0.6) sepia(0.1);
+  --overlay-filter: brightness(0.72) saturate(1.6);
+  --route-opacity: 0.55;
+  --route-opacity-active: 1;
+  --route-corridor-opacity: 0.14;
+
+  --chart-grid: rgba(43, 37, 28, 0.08);
+  --chart-line: #5a8200;
+  --chart-fill: rgba(150, 200, 20, 0.22);
+  --chart-fill-end: rgba(150, 200, 20, 0);
+  --chart-dot: #3b5600;
+  --chart-label: rgba(92, 87, 77, 0.85);
+  --chart-limit: rgba(201, 106, 0, 0.5);
+  --chart-limit-label: rgba(168, 87, 0, 0.95);
+
+  --scrollbar: #cfcabe;
+  --scrollbar-hover: #b3ad9f;
+
+  --shadow: 0 1px 2px rgba(43, 37, 28, 0.06), 0 10px 30px rgba(43, 37, 28, 0.08);
+  --shadow-popover: 0 12px 30px rgba(43, 37, 28, 0.16);
+  --shadow-modal: 0 30px 80px rgba(43, 37, 28, 0.25);
 }

@@ -4,10 +4,10 @@
    ========================================================================== */
 
 .panel {
-  background: linear-gradient(160deg, rgba(15, 28, 45, 0.92), rgba(9, 17, 29, 0.92));
-  border: 1px solid var(--border-soft);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow);
 }
 
 /* Empty state, used inside panels and lists ("no alarms", "no vehicle found") */
