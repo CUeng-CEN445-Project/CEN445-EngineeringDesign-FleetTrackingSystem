@@ -13,8 +13,8 @@ authors = [
 ]
 
 # ---------------------------------------------------------------------------
-# Linting (CI runs `ruff check .`). Rules are pinned here so that a newer Ruff
-# release does not silently change what CI enforces.
+# Linting (`ruff check .`). Rules are pinned here so that a newer Ruff
+# release does not silently change what is enforced.
 # ---------------------------------------------------------------------------
 [tool.ruff]
 target-version = "py310"

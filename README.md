@@ -29,17 +29,16 @@ the top bar).
 
 1. [Features](#features)
 2. [Quick start](#quick-start)
-3. [CI/CD](#cicd)
-4. [Architecture](#architecture)
-5. [Time-series data model](#time-series-data-model)
-6. [Alarm rules](#alarm-rules)
-7. [API](#api)
-8. [Simulation](#simulation)
-9. [Languages (i18n)](#languages-i18n)
-10. [Frontend styles](#frontend-styles)
-11. [Project structure](#project-structure)
-12. [Screenshots](#screenshots)
-13. [Notes and limitations](#notes-and-limitations)
+3. [Architecture](#architecture)
+4. [Time-series data model](#time-series-data-model)
+5. [Alarm rules](#alarm-rules)
+6. [API](#api)
+7. [Simulation](#simulation)
+8. [Languages (i18n)](#languages-i18n)
+9. [Frontend styles](#frontend-styles)
+10. [Project structure](#project-structure)
+11. [Screenshots](#screenshots)
+12. [Notes and limitations](#notes-and-limitations)
 
 ---
 
@@ -141,37 +140,6 @@ No extra packages (only `unittest`). 137 tests, about 1 second:
 pip install ruff==0.17.4
 ruff check .          # rules are configured in pyproject.toml
 ```
-
----
-
-## CI/CD
-
-GitHub Actions workflows live in `.github/workflows/`.
-
-**CI** (`ci.yml`) runs on every push to `main` / `master`, on every pull request and
-manually (`workflow_dispatch`):
-
-| Job | What it checks |
-|---|---|
-| Lint | `ruff check` with the rules from `pyproject.toml`; `node --check` for `web/js/*.js` |
-| Tests | the full test suite on **Ubuntu and Windows** × **Python 3.10, 3.12, 3.14** (6 runs) |
-| Smoke test | starts `app.py`, checks the dashboard and `/api/state`, triggers a speeding scenario and waits for the alarm |
-
-**CD** (`release.yml`) runs when a version tag is pushed:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-1. The test suite runs again.
-2. A **GitHub Release** is created with generated release notes and a source
-   archive `filotrack-v1.0.0.zip` (built with `git archive`).
-
-Both use the built-in `GITHUB_TOKEN`; no secrets need to be configured. If the
-repository (or organization) restricts workflow permissions, allow
-*Read and write permissions* under **Settings → Actions → General**. Dependabot
-(`.github/dependabot.yml`) opens weekly pull requests for newer action versions.
 
 ---
 
@@ -411,10 +379,6 @@ breakpoints are 1500 / 1260 / 900 / 620 px (listed in `tokens.css`); state class
 
 ```
 CEN317 - Engineering Design/
-├── .github/
-│   ├── workflows/ci.yml      # CI: lint, tests (Linux + Windows), smoke test
-│   ├── workflows/release.yml # CD on version tags: GitHub Release with source archive
-│   └── dependabot.yml        # Weekly updates for the GitHub Actions versions
 ├── app.py                    # Entry point, CLI, server lifecycle
 ├── start.bat                 # Windows launcher (`start.bat test` → tests)
 ├── pyproject.toml            # Project metadata and Ruff lint configuration
