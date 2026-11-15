@@ -672,12 +672,30 @@ async function loadHistory() {
   }
 }
 
+/* Splits the trail into separate segments wherever recording was interrupted
+   (server restart, pause), so no straight line is drawn across the gap.
+   Returns an array of latlng arrays (a Leaflet multi-polyline). */
+function splitTrail(points) {
+  const gaps = [];
+  for (let i = 1; i < points.length; i++) gaps.push(points[i].ts - points[i - 1].ts);
+  const sorted = [...gaps].sort((a, b) => a - b);
+  const typical = sorted[Math.floor(sorted.length / 2)] || 1000;
+  const maxGap = Math.max(5000, typical * 3);
+
+  const segments = [[[points[0].lat, points[0].lng]]];
+  for (let i = 1; i < points.length; i++) {
+    if (gaps[i - 1] > maxGap) segments.push([]);
+    segments[segments.length - 1].push([points[i].lat, points[i].lng]);
+  }
+  return segments.filter((s) => s.length > 1);
+}
+
 function drawHistory(points) {
   if (!state.historyLayer) return;
   state.historyLayer.clearLayers();
   if (points.length < 2) return;
 
-  const latlngs = points.map((p) => [p.lat, p.lng]);
+  const latlngs = splitTrail(points);
   const color = selectedVehicle()?.route_color || cssVar('--accent');
 
   // Wide colored glow + thin bright core

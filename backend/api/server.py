@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import socket
 import sys
 import threading
 import time
@@ -44,7 +45,15 @@ _CLIENT_GONE = (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)
 
 class FleetHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
-    allow_reuse_address = True
+    # On Windows SO_REUSEADDR lets a *second* process bind a port that is already
+    # in use, so two instances would run side by side and both simulators would
+    # write to the same database. There we bind exclusively instead.
+    allow_reuse_address = sys.platform != "win32"
+
+    def server_bind(self):
+        if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
 
     def __init__(self, addr, handler, app: AppContext):
         super().__init__(addr, handler)
